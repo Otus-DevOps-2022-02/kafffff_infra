@@ -1,2 +1,3 @@
 # kafffff_infra
-kafffff Infra repository
+bastion_IP = 178.154.247.92
+someinternalhost_IP = 10.128.0.19
