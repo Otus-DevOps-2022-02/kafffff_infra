@@ -1,0 +1,10 @@
+{
+  "service_account_key_file": "key.json",
+  "folder_id": "",
+  "source_image_family": "ubuntu-1604-lts",
+  "image_family": "reddit-base",
+  "ssh_username": "ubuntu",
+  "platform_id": "standard-v1",
+  "disk_size_gb": "12",
+  "instance_cores": "2"
+}
