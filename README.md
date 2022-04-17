@@ -1,28 +1,73 @@
-### Тема 7. Модели управления инфраструктурой. Подготовка образов с помощью Packer
-### Устанавливаем Packer.
-### #Создаём сервисный аккаунт YC.
+### Тема 8. Знакомство с Terraform
+### Перед terraform init идем
 ```
-yc config list
+https://cloud.yandex.ru/docs/tutorials/infrastructure-management/terraform-quickstart
 ```
-### Создание файла-шаблона packer
-### Создание скриптов для provisioners
+### в main.tf вставляем 
 ```
-Так как Packer выдавал ошибку при установке пакетов, то изменяем следующие параметры в скриптах install_ruby.sh и install_mongodb.sh: apt update на apt-get update apt install на apt-get install Вставляем следующие команды сразу после apt-get update:
+terraform {
+  required_providers {
+    yandex = {
+      source = "terraform-registry.storage.yandexcloud.net/yandex-cloud/yandex"
+    }
+  }
+  required_version = ">= 0.13"
+}
 
-sudo rm /var/lib/apt/lists/lock
-sudo rm /var/cache/apt/archives/lock
-sudo rm /var/lib/dpkg/lock
-sudo rm /var/lib/dpkg/lock-frontend
+provider "yandex" {
+  token     = "<OAuth>"
+  cloud_id  = "<идентификатор облака>"
+  folder_id = "<идентификатор каталога>"
+  zone      = "<зона доступности по умолчанию>"
+}
 ```
-### Проверка корректности файла
+### Далее в main.tf добавляем
 ```
-packer validate -var-file=variables.json ubuntu16.json
+resource "yandex_compute_instance" "app" {
+  name = "reddit-app"
+
+  resources {
+    cores  = 2
+    memory = 2
+  }
+
+  boot_disk {
+    initialize_params {
+      # Указать id образа созданного в предыдущем домашем задании
+      image_id = "fd8fg4r8mrvoq6q2ve76"
+    }
+  }
+
+  network_interface {
+    # Указан id подсети default-ru-central1-a
+    subnet_id = "e9bem33uhju28r5i7pnu"
+    nat       = true
+  }
+}
 ```
-### Сборка
+### где лежит в YC -> VPC -> подсети. ssh-keygen https://ruvds.com/ru/helpcenter/ssh-ubuntu-18-04-linux/
+### добавить ssh ключ в main.tf
 ```
-packer build -var-file=variables.json ubuntu16.json
+  metadata {
+    foo      = "bar"
+    ssh-keys = "ubuntu:${file("~/.ssh/id_rsa.pub")}"
+  }
 ```
-### После сборки переходим в Ya cloud -> Образы. Там найдём созданный инстанс. В Ya cloud -> Виртуальные машины создаём ВМ. Подключаемся к ВМ
+### Задание со *
 ```
-ssh -i ~/.ssh/appuser appuser@<публичный IP машины>
+Создаём lb.tf, идём 
+https://cloud.yandex.com/en/docs/tutorials/infrastructure-management/terraform-quickstart 
+далее идём 
+https://registry.terraform.io/providers/yandex-cloud/yandex/latest/docs/resources/lb_network_load_balancer#import
+
 ```
+### Откуда взять output values смотрим в terraform.tfstate
+### Count, dynamic
+```
+https://www.terraform.io/language/meta-arguments/count,
+https://www.terraform.io/language/expressions/dynamic-blocks
+```
+### Чтобы не было Error  Cycle host меняет на self
+### Добавляем sleep в .sh
+
+### Итог: с помошью терраформа создано 2 инстанса в YC, добавлен балансировщик нагрузки.На инстансы установлены приложения.
