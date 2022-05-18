@@ -1,11 +1,3 @@
-terraform {
-  required_providers {
-    yandex = {
-      source  = "yandex-cloud/yandex"
-    }
-  }
-  required_version = ">= 0.13"
-}
 provider "yandex" {
   service_account_key_file = var.service_account_key_file
   cloud_id                 = var.cloud_id
@@ -13,8 +5,8 @@ provider "yandex" {
 }
 resource "yandex_compute_instance" "app" {
   count = var.count_inst
-  name = "reddit-app-${count.index}"
-  zone  = var.zone 
+  name  = "reddit-app-${count.index}"
+  zone  = var.zone
 
   resources {
     cores  = 2
@@ -28,7 +20,7 @@ resource "yandex_compute_instance" "app" {
   }
 
   network_interface {
-    subnet_id = yandex_vpc_subnet.app-subnet.id
+    subnet_id = var.subnet_id
     nat       = true
   }
 
@@ -49,14 +41,4 @@ resource "yandex_compute_instance" "app" {
   provisioner "remote-exec" {
     script = "files/deploy.sh"
   }
-}
-resource "yandex_vpc_network" "app-network" {
-  name = "reddit-app-network"
-}
-
-resource "yandex_vpc_subnet" "app-subnet" {
-  name           = "reddit-app-subnet"
-  zone           = "ru-central1-a"
-  network_id     = "${yandex_vpc_network.app-network.id}"
-  v4_cidr_blocks = ["192.168.10.0/24"]
 }

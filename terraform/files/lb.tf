@@ -1,11 +1,11 @@
 resource "yandex_lb_target_group" "app-target-group" {
-  name      = "app-target-group"
+  name = "app-target-group"
 
   dynamic "target" {
     for_each = yandex_compute_instance.app.*.network_interface.0.ip_address
     content {
       subnet_id = var.subnet_id
-      address = target.value
+      address   = target.value
     }
   }
 }
